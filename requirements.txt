@@ -1,7 +1,7 @@
 accelerate 
-peft==0.5.0 
-bitsandbytes==0.41.3 
-transformers==4.38.2
+peft 
+bitsandbytes 
+transformers
 protobuf 
 sentencepiece 
 scipy
