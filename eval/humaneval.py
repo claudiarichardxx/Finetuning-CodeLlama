@@ -20,7 +20,7 @@ class HumanEval:
 
     def read_problems(self):
 
-        self.HUMAN_EVAL = "HumanEval.jsonl.gz"
+        self.HUMAN_EVAL = "eval/HumanEval.jsonl.gz"
         evalset_file = self.HUMAN_EVAL
         return {task["task_id"]: task for task in self.stream_jsonl(evalset_file)}
 
