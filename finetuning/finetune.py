@@ -6,24 +6,24 @@ import torch
 
 class Finetune:
 
-    def setParameters(self, lora_r= 100):
+    def setParameters(self, lora_r= 100, lora_alpha = 16, lora_dropout = 0.1, output_dir = "./results", num_train_epochs = 3, batch_size = 2, weight_decay = 0.01, learning_rate = 2e-5, optim = "paged_adamw_32bit"):
 
         self.lora_r = lora_r  #lora rank                               
-        self.lora_alpha = 16    #Alpha parameter for LoRA scaling
-        self.lora_dropout = 0.1
+        self.lora_alpha = lora_alpha    #Alpha parameter for LoRA scaling
+        self.lora_dropout = lora_dropout
         
-        self.output_dir = "./results"
-        self.num_train_epochs = 3
+        self.output_dir = output_dir
+        self.num_train_epochs = num_train_epochs
         self.fp16 = False
         self.bf16 = False
-        self.per_device_train_batch_size = 2
-        self.per_device_eval_batch_size = 2
+        self.per_device_train_batch_size = batch_size
+        self.per_device_eval_batch_size = batch_size
         self.gradient_accumulation_steps = 1
         self.gradient_checkpointing = True
         self.max_grad_norm = 0.3
-        self.learning_rate = 2e-5 #default is 2e-4
-        self.weight_decay = 0.01 #0.001
-        self.optim = "paged_adamw_32bit"
+        self.learning_rate = learning_rate #default is 2e-4
+        self.weight_decay = weight_decay #0.001
+        self.optim = optim
         self.lr_scheduler_type = "constant"
         self.max_steps = -1
         self.warmup_ratio = 0.03
@@ -35,9 +35,10 @@ class Finetune:
 
         #Load the entire model on the GPU 0
         #device_map = {"": "cuda"} # change to 'auto' on local machine
+
         #Load tokenizer and model with QLoRA configuration
 
-
+        self.bnb_4bit_compute_dtype = "float16"
         self.compute_dtype = getattr(torch, self.bnb_4bit_compute_dtype)
 
         # Check GPU compatibility with bfloat16
@@ -62,12 +63,14 @@ class Finetune:
 
         return model, tokenizer
 
+
     def make_supervised_data_module(self, data_path, tokenizer, mode = 'IT'):
         """Make dataset and collator for supervised fine-tuning."""
         train_dataset = SupervisedDataset(data_path, tokenizer = tokenizer, mode = mode)
         data_collator = DataCollatorForSupervisedDataset(tokenizer = tokenizer)
         return dict(train_dataset = train_dataset, eval_dataset = None, data_collator = data_collator)  
     
+
 
     def train(self, model, tokenizer, mode = 'IT', max_seq_length = 500, output_dir ='Results/', data_path='leetcode_instructions_code_alpaca_format.json'):
 
