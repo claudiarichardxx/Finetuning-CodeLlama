@@ -27,7 +27,7 @@ class Pipelines:
             he = HumanEval()
 
             self.prompts = {'alpaca' : self.generate_alpaca_prompt, 'leetcode': self.generate_leetcode_promptV2}
-            self.get_outputs(model, tokenizer, device = 'cuda', prompt_type = 'leetcode', num_samples_per_task = 1)
+            self.get_outputs_for_first_n_tests(model, tokenizer, device = 'cuda', prompt_type = 'leetcode', num_samples_per_task = 1)
             pass_at_k, accuracy = he.evaluate_functional_correctness_for_n_tasks("samples.jsonl")
             return pass_at_k, accuracy
     
@@ -114,6 +114,35 @@ class Pipelines:
             for task_id in problems:
                 full, completion = ge.generate(task_id, self.prompts[prompt_type](input = problems[task_id]["prompt"]), device, model, tokenizer) 
 
+                samples.append(dict(task_id=task_id, full_generation = full, completion = completion))
+
+        he.write_jsonl("samples.jsonl", samples)
+
+
+    #to run the first n tests
+    def get_outputs_for_first_n_tests(self, model, tokenizer, device, prompt_type = None, num_of_tests = 1, num_samples_per_task = 1):
+
+        he = HumanEval()
+        problems = he.read_problems()
+        probs = {}
+        n = 0
+        for key, value in problems.items():
+            if(n < num_of_tests):
+                probs[key] = value
+            n = n + 1
+
+        samples = []
+        ge = Generate()
+        if(prompt_type == None):
+
+            for task_id in probs:
+                full, completion = ge.generate(task_id, problems[task_id]["prompt"], device, model, tokenizer) 
+                samples.append(dict(task_id=task_id, full_generation = full, completion = completion))
+
+        else:
+
+            for task_id in probs:
+                full, completion = ge.generate(task_id, self.prompts[prompt_type](input = problems[task_id]["prompt"]), device, model, tokenizer) 
                 samples.append(dict(task_id=task_id, full_generation = full, completion = completion))
 
         he.write_jsonl("samples.jsonl", samples)
