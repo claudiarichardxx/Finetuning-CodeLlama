@@ -2,6 +2,7 @@ import re
 
 class Generate:
 
+
     def generate(self, taskid, prompt, device, model, tokenizer):
 
         '''
@@ -17,25 +18,26 @@ class Generate:
         #model_inputs = tokenizer('#Don\'t fill more than one function' + prompt, return_tensors='pt')
         model_inputs = tokenizer(prompt, return_tensors='pt').to(device)
         print("Task ID: " + str(taskid) + "\n" + 100 * '-')
-        #generate new tokens
-        #greedy_output = model.generate(model_inputs['input_ids'], max_length = 1000, eos_token_id=tokenizer.eos_token_id)
-        greedy_output = model.generate(model_inputs['input_ids'], max_length = 1000)
+        # generate new tokens
+        # greedy_output = model.generate(model_inputs['input_ids'], max_length = 1000, eos_token_id=tokenizer.eos_token_id)
+        greedy_output = model.generate(model_inputs['input_ids'], max_length = 1000, eos_token_id=tokenizer.eos_token_id, pad_token_id = tokenizer.pad_token_id)
         print("Generating...")
         #max_length=500
+        #, negative_prompt_attention_mask = model_inputs['attention_mask']
         
-        #negative_prompt_attention_mask = model_inputs['attention_mask']
         output = tokenizer.decode(greedy_output[0])
         print('Before processing\n',output)
+        
         try:
-            after = self.processOutput(output[output.find('### Response:')+len('### Response:'):])
-
+            after = self.processOutput(output)
+            print('After processing\n', after)
+            
         except:
-            print('no function def')
             after = output
-
-        print('After processing\n', after)
+            print('Could not process')
+            
         return output, after
-    
+
 
     def processOutput(self, output):
 
@@ -62,6 +64,12 @@ class Generate:
         Returns the resultant string
 
         '''
+            
+        possible_starters = ['### Response:', '### Output:']
+            
+        for starter in possible_starters:
+            if(starter in output):
+                output = output[output.find(starter)+len(starter):]
 
         output = output.replace('<s>','').replace('</s>','').strip()
         output = output.replace('"',"'")
@@ -107,6 +115,7 @@ class Generate:
 
         #print(output)
         return (output)
+
     
     def remove_text_inside_quotes(self, input_string, quote):
 
