@@ -106,7 +106,7 @@ class HumanEval:
         '''
 
         problem_file = self.HUMAN_EVAL
-        problems = self.read_problems(problem_file)
+        problems = self.read_problems()
 
         # Check the generated samples against test suites.
         with ThreadPoolExecutor(max_workers=n_workers) as executor:
