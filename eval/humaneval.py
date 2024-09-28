@@ -241,7 +241,7 @@ class HumanEval:
 
 
     @contextlib.contextmanager
-    def time_limit(seconds: float):
+    def time_limit(self, seconds: float):
         def signal_handler(signum, frame):
             raise TimeoutException("Timed out!")
         signal.setitimer(signal.ITIMER_REAL, seconds)
