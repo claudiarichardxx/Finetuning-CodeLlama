@@ -3,7 +3,7 @@ import copy
 
 class Tokenize:
 
-    def smart_tokenizer_and_embedding_resize(self,
+    def smart_tokenizer_and_embedding_resize(
             special_tokens_dict,
             tokenizer,
             model,
@@ -26,7 +26,7 @@ class Tokenize:
                 output_embeddings[-num_new_tokens:] = output_embeddings_avg
 
 
-    def _tokenize_fn(self, strings, tokenizer):
+    def _tokenize_fn(strings, tokenizer):
             """Tokenize a list of strings."""
             tokenized_list = [
                 tokenizer(
