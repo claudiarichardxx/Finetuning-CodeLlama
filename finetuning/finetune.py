@@ -1,4 +1,4 @@
-from .tokenize import make_supervised_data_module
+from .dataProcessing import SupervisedDataset, DataCollatorForSupervisedDataset
 from transformers import SFTTrainer, LlamaForCausalLM, CodeLlamaTokenizer, TrainingArguments
 from peft import LoraConfig, PeftModel
 import torch
@@ -61,10 +61,16 @@ class Finetune:
 
         return model, tokenizer
 
+    def make_supervised_data_module(self, data_path, tokenizer, mode = 'IT'):
+        """Make dataset and collator for supervised fine-tuning."""
+        train_dataset = SupervisedDataset(data_path, tokenizer = tokenizer, mode = mode)
+        data_collator = DataCollatorForSupervisedDataset(tokenizer = tokenizer)
+        return dict(train_dataset = train_dataset, eval_dataset = None, data_collator = data_collator)  
+    
 
     def train(self, model, tokenizer, mode = 'IT', max_seq_length = 500, output_dir ='Results/', data_path='leetcode_instructions_code_alpaca_format.json'):
 
-        data_module = make_supervised_data_module(data_path, tokenizer=tokenizer, mode = mode)
+        data_module = self.make_supervised_data_module(data_path, tokenizer=tokenizer, mode = mode)
 
         #Set supervised fine-tuning parameters
         peft_config = LoraConfig(

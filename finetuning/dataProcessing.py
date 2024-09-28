@@ -1,5 +1,5 @@
 import torch
-import Dataset
+from torch.utils.data import Dataset
 from dataclasses import dataclass, field
 import copy
 from .utils import *
@@ -89,10 +89,6 @@ class DataCollatorForSupervisedDataset(object):
             )
 
 
-    def make_supervised_data_module(data_path, tokenizer, mode = 'IT'):
-        """Make dataset and collator for supervised fine-tuning."""
-        train_dataset = SupervisedDataset(data_path, tokenizer = tokenizer, mode = mode)
-        data_collator = DataCollatorForSupervisedDataset(tokenizer = tokenizer)
-        return dict(train_dataset = train_dataset, eval_dataset = None, data_collator = data_collator)    
+      
     
 

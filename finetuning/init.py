@@ -1,5 +1,5 @@
 from transformers import CodeLlamaTokenizer, LlamaForCausalLM, BitsAndBytesConfig
-from .tokenize import smart_tokenizer_and_embedding_resize, _tokenize_fn
+from .tokenize import Tokenize
 
 DEFAULT_PAD_TOKEN = "[PAD]"
 DEFAULT_EOS_TOKEN = "</s>"
@@ -38,7 +38,7 @@ class getModel:
                 use_fast=False,)
 
         if tokenizer.pad_token is None:
-                smart_tokenizer_and_embedding_resize(
+                Tokenize.smart_tokenizer_and_embedding_resize(
                     special_tokens_dict=dict(pad_token=DEFAULT_PAD_TOKEN),
                     tokenizer=tokenizer,
                     model = model,
