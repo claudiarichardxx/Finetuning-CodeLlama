@@ -96,8 +96,8 @@ class Pipelines:
         writes the list of dictionaries to "samples.jsonl"
 
         '''
-        #he = HumanEval()
-        problems = HumanEval.read_problems()
+        he = HumanEval()
+        problems = he.read_problems()
         samples = []
         ge = Generate()
         if(prompt_type == None):
