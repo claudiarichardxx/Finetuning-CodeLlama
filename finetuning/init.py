@@ -38,9 +38,11 @@ class getModel:
                 model_name,
                 padding_side = "right",
                 use_fast=False,)
+        
+        tt = Tokenize()
 
         if tokenizer.pad_token is None:
-                Tokenize.smart_tokenizer_and_embedding_resize(
+                tt.smart_tokenizer_and_embedding_resize(
                     special_tokens_dict=dict(pad_token=DEFAULT_PAD_TOKEN),
                     tokenizer=tokenizer,
                     model = model,

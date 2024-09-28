@@ -2,6 +2,7 @@ import torch
 from torch.utils.data import Dataset
 from dataclasses import dataclass, field
 import copy
+from .tokenize import Tokenize
 from .utils import *
 
 IGNORE_INDEX = -100
@@ -29,7 +30,8 @@ class SupervisedDataset(Dataset):
             
             """Preprocess the data by tokenizing."""
             examples = [s + t for s, t in zip(sources, targets)]
-            examples_tokenized, sources_tokenized = [self._tokenize_fn(strings, tokenizer) for strings in (examples, sources)]
+            tt = Tokenize()
+            examples_tokenized, sources_tokenized = [tt._tokenize_fn(strings, tokenizer) for strings in (examples, sources)]
             input_ids = examples_tokenized["input_ids"]
             labels = copy.deepcopy(input_ids)
 
