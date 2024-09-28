@@ -9,7 +9,9 @@ class Pipelines:
 
     def finetune(self, model_name,  mode = 'IT', output_dir = 'FT_model/', run_eval = True, run_finetuning = False, load_quantized_model = True):
 
-        model, tokenizer = getModel.load(model_name, load_quantized_model = load_quantized_model)
+        gg = getModel()
+        model, tokenizer = gg.load(model_name = model_name, load_quantized_model = load_quantized_model)
+
 
         if(run_finetuning):
 

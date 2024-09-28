@@ -15,7 +15,6 @@ import signal
 import tempfile
 import numpy as np
 import tqdm
-import TimeoutException
 
 class HumanEval:
 
