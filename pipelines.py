@@ -16,7 +16,7 @@ class Pipelines:
         if(run_finetuning):
 
             ft = Finetune()
-            ft.setParameters(lora_r = 100)
+            ft.setParameters(lora_r = 100, load_quantized_model = load_quantized_model)
             output_dir = output_dir
             ft.train(model, tokenizer, output_dir = output_dir, mode = mode, max_seq_length = 500, data_path = 'data/leetcode_instructions_code_alpaca_format.json')
             model, tokenizer = ft.merge(base_model_name = model_name, finetuned_model_dir = output_dir)

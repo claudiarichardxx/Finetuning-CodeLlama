@@ -6,7 +6,7 @@ import torch
 
 class Finetune:
 
-    def setParameters(self, lora_r= 100, lora_alpha = 16, lora_dropout = 0.1, output_dir = "./results", num_train_epochs = 3, batch_size = 2, weight_decay = 0.01, learning_rate = 2e-5, optim = "paged_adamw_32bit"):
+    def setParameters(self, lora_r= 100, lora_alpha = 16, lora_dropout = 0.1, load_quantized_model = True, output_dir = "./results", num_train_epochs = 3, batch_size = 2, weight_decay = 0.01, learning_rate = 2e-5, optim = "paged_adamw_32bit"):
 
         self.lora_r = lora_r  #lora rank                               
         self.lora_alpha = lora_alpha    #Alpha parameter for LoRA scaling
@@ -37,7 +37,7 @@ class Finetune:
         #device_map = {"": "cuda"} # change to 'auto' on local machine
 
         #Load tokenizer and model with QLoRA configuration
-
+        self.use_4bit = load_quantized_model
         self.bnb_4bit_compute_dtype = "float16"
         self.compute_dtype = getattr(torch, self.bnb_4bit_compute_dtype)
 
