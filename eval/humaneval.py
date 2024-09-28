@@ -42,7 +42,7 @@ class HumanEval:
                         yield json.loads(line)
 
 
-    def write_jsonl(filename: str, data: Iterable[Dict], append: bool = False):
+    def write_jsonl(self, filename: str, data: Iterable[Dict], append: bool = False):
         """
         Writes an iterable of dictionaries to jsonl
         """
