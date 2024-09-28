@@ -14,8 +14,8 @@ class Pipelines:
 
 
         if(run_finetuning):
-
-            ft = Finetune.setParameters(lora_r= 100)
+            ft = Finetune()
+            ft.setParameters(lora_r= 100)
             output_dir = output_dir
             ft.train(model, tokenizer, output_dir = output_dir, mode = mode, max_seq_length = 500, data_path = 'data/leetcode_instructions_code_alpaca_format.json')
             model, tokenizer = ft.merge(base_model_name = model_name, finetuned_model_dir = output_dir)
@@ -96,21 +96,22 @@ class Pipelines:
         writes the list of dictionaries to "samples.jsonl"
 
         '''
-        problems = HumanEval.read_problems()
+        he = HumanEval()
+        problems = he.read_problems()
         samples = []
-
+        ge = Generate()
         if(prompt_type == None):
 
             for task_id in problems:
-                full, completion = Generate.generate(task_id, problems[task_id]["prompt"], device, model, tokenizer) 
+                full, completion = ge.generate(task_id, problems[task_id]["prompt"], device, model, tokenizer) 
                 samples.append(dict(task_id=task_id, full_generation = full, completion = completion))
 
         else:
 
             for task_id in problems:
-                full, completion = Generate.generate(task_id, self.prompts[prompt_type](input = problems[task_id]["prompt"]), device, model, tokenizer) 
+                full, completion = ge.generate(task_id, self.prompts[prompt_type](input = problems[task_id]["prompt"]), device, model, tokenizer) 
 
                 samples.append(dict(task_id=task_id, full_generation = full, completion = completion))
 
-        HumanEval.write_jsonl("samples.jsonl", samples)
+        he.write_jsonl("samples.jsonl", samples)
 
