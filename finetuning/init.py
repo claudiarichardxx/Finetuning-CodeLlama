@@ -1,5 +1,6 @@
 from transformers import CodeLlamaTokenizer, LlamaForCausalLM, BitsAndBytesConfig
 from .tokenize import Tokenize
+import torch
 
 DEFAULT_PAD_TOKEN = "[PAD]"
 DEFAULT_EOS_TOKEN = "</s>"
@@ -14,6 +15,7 @@ class getModel:
         self.bnb_4bit_compute_dtype = "float16"
         self.bnb_4bit_quant_type = "nf4"
         self.use_nested_quant = False
+        self.compute_dtype = getattr(torch, self.bnb_4bit_compute_dtype)
 
         bnb_config = BitsAndBytesConfig(
                 load_in_4bit = self.use_4bit,

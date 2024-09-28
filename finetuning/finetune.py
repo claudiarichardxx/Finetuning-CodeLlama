@@ -1,5 +1,6 @@
 from .dataProcessing import SupervisedDataset, DataCollatorForSupervisedDataset
-from transformers import SFTTrainer, LlamaForCausalLM, CodeLlamaTokenizer, TrainingArguments
+from transformers import LlamaForCausalLM, CodeLlamaTokenizer, TrainingArguments
+from trl import SFTTrainer,DataCollatorForCompletionOnlyLM
 from peft import LoraConfig, PeftModel
 import torch
 
