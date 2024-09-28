@@ -2,7 +2,7 @@ from finetuning.initializer import *
 from finetuning.finetune import *
 from finetuning.dataProcessing import *
 from finetuning.generate import *
-from eval.humaneval import *
+from eval.humaneval import HumanEval
 
 
 class Pipelines:
@@ -96,8 +96,8 @@ class Pipelines:
         writes the list of dictionaries to "samples.jsonl"
 
         '''
-        he = HumanEval()
-        problems = he.read_problems()
+        #he = HumanEval()
+        problems = HumanEval.read_problems()
         samples = []
         ge = Generate()
         if(prompt_type == None):
