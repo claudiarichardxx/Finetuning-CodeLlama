@@ -61,7 +61,7 @@ class HumanEval:
                 for x in data:
                     fp.write((json.dumps(x) + "\n").encode('utf-8'))
 
-    def estimate_pass_at_k(
+    def estimate_pass_at_k(self,
         num_samples: Union[int, List[int], np.ndarray],
         num_correct: Union[List[int], np.ndarray],
         k: int

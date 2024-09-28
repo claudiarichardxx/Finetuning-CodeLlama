@@ -14,8 +14,9 @@ class Pipelines:
 
 
         if(run_finetuning):
+
             ft = Finetune()
-            ft.setParameters(lora_r= 100)
+            ft.setParameters(lora_r = 100)
             output_dir = output_dir
             ft.train(model, tokenizer, output_dir = output_dir, mode = mode, max_seq_length = 500, data_path = 'data/leetcode_instructions_code_alpaca_format.json')
             model, tokenizer = ft.merge(base_model_name = model_name, finetuned_model_dir = output_dir)
@@ -23,14 +24,16 @@ class Pipelines:
         
         if(run_eval):
 
+            he = HumanEval()
+
             self.prompts = {'alpaca' : self.generate_alpaca_prompt, 'leetcode': self.generate_leetcode_promptV2}
             self.get_outputs(model, tokenizer, device = 'cuda', prompt_type = 'leetcode', num_samples_per_task = 1)
-            pass_at_k, accuracy = HumanEval.evaluate_functional_correctness_for_n_tasks("samples.jsonl")
+            pass_at_k, accuracy = he.evaluate_functional_correctness_for_n_tasks("samples.jsonl")
             return pass_at_k, accuracy
     
         return 0, 0
 
-    def generate_alpaca_prompt(input):
+    def generate_alpaca_prompt(self, input):
             
             INSTRUCTION = f"""Below is an instruction that describes a task. Write a response that appropriately completes the request.
 
@@ -44,7 +47,7 @@ class Pipelines:
             return INSTRUCTION
     
 
-    def generate_leetcode_prompt(input):
+    def generate_leetcode_prompt(self, input):
 
         try:
             ques = input[input.find('"""')+3:]
@@ -63,7 +66,7 @@ class Pipelines:
         
         return INSTRUCTION
     
-    def generate_leetcode_promptV2(input):
+    def generate_leetcode_promptV2(self, input):
 
         try:
             ques = input[input.find('"""')+3:]
