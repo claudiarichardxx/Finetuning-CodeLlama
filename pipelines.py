@@ -1,4 +1,4 @@
-from finetuning.init import *
+from finetuning.initializer import *
 from finetuning.finetune import *
 from finetuning.dataProcessing import *
 from finetuning.generate import *
@@ -9,7 +9,7 @@ class Pipelines:
 
     def finetune(self, model_name,  mode = 'IT', output_dir = 'FT_model/', run_eval = True, run_finetuning = False, load_quantized_model = True):
 
-        model, tokenizer = getModel(model_name, load_quantized_model = load_quantized_model)
+        model, tokenizer = getModel.load(model_name, load_quantized_model = load_quantized_model)
 
         if(run_finetuning):
 
@@ -20,7 +20,7 @@ class Pipelines:
             
         
         if(run_eval):
-            
+
             self.prompts = {'alpaca' : self.generate_alpaca_prompt, 'leetcode': self.generate_leetcode_promptV2}
             self.get_outputs(model, tokenizer, device = 'cuda', prompt_type = 'leetcode', num_samples_per_task = 1)
             pass_at_k, accuracy = HumanEval.evaluate_functional_correctness_for_n_tasks("samples.jsonl")

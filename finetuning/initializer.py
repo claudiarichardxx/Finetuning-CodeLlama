@@ -9,7 +9,7 @@ DEFAULT_UNK_TOKEN = "</s>"
 
 class getModel:
 
-    def __init__(self, model_name, load_quantized_model = True):
+    def load(self, model_name, load_quantized_model = True):
 
         self.use_4bit = True
         self.bnb_4bit_compute_dtype = "float16"
