@@ -11,10 +11,4 @@ To  install the required libraries, run this:
 ```
 pip install -r requirements.txt
 ```
-
-# To cache the Huggingface key to the cache, run:
-
-This step is needed to push the models and datasets to the Huggingface hub.
-```
-huggingface-cli login
-```
+# Quick start
