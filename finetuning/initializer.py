@@ -11,6 +11,31 @@ class getModel:
 
     def load(self, model_name, load_quantized_model = True):
 
+        """
+        Load a model and tokenizer, with optional quantization using 4-bit precision.
+
+        Input arguments:
+            model_name (str): 
+                The name or path of the pretrained model to load (e.g., a model from Hugging Face's model hub).
+            
+            load_quantized_model (bool, optional): 
+                If True, loads the model with 4-bit quantization for memory efficiency. 
+                If False, loads the model without quantization. Default is True.
+
+        What it does:
+            - Configures the model for 4-bit quantization if `load_quantized_model` is True, using parameters like quantization type (`nf4`) and compute data type (`float16`).
+            - Loads the model using the specified quantization configuration if enabled.
+            - Loads the tokenizer associated with the model, ensuring the correct padding side and tokenizer type.
+            - If the tokenizer lacks a `pad_token`, resizes the tokenizer and model embeddings to account for it using `smart_tokenizer_and_embedding_resize`.
+            - Adds special tokens (`eos_token`, `bos_token`, `unk_token`) to the tokenizer.
+
+        Returns:
+            tuple: 
+                - `model` (PreTrainedModel): The loaded model, either quantized or not based on the configuration.
+                - `tokenizer` (PreTrainedTokenizer): The corresponding tokenizer for the model, with special tokens added.
+        """
+
+        
         self.use_4bit = True
         self.bnb_4bit_compute_dtype = "float16"
         self.bnb_4bit_quant_type = "nf4"

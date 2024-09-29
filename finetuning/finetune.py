@@ -8,6 +8,44 @@ class Finetune:
 
     def setParameters(self, lora_r= 100, lora_alpha = 16, lora_dropout = 0.1, load_quantized_model = True, output_dir = "./results", num_train_epochs = 3, batch_size = 2, weight_decay = 0.01, learning_rate = 2e-5, optim = "paged_adamw_32bit"):
 
+
+        """
+        Set up various parameters for training and model configuration, including LoRA parameters and training settings.
+
+        Input arguments:
+            lora_r (int, optional): 
+                The LoRA rank. Default is 100.
+            lora_alpha (int, optional): 
+                Alpha parameter for LoRA scaling. Default is 16.
+            lora_dropout (float, optional): 
+                Dropout rate for LoRA. Default is 0.1.
+            load_quantized_model (bool, optional): 
+                Whether to load the model in 4-bit quantized mode. Default is True.
+            output_dir (str, optional): 
+                Directory to save training outputs. Default is "./results".
+            num_train_epochs (int, optional): 
+                Number of training epochs. Default is 3.
+            batch_size (int, optional): 
+                Batch size for training and evaluation. Default is 2.
+            weight_decay (float, optional): 
+                Weight decay rate for optimization. Default is 0.01.
+            learning_rate (float, optional): 
+                Learning rate for optimization. Default is 2e-5.
+            optim (str, optional): 
+                The optimizer to use. Default is "paged_adamw_32bit".
+
+        What it does:
+            - Configures parameters for LoRA, including rank, alpha scaling, and dropout.
+            - Sets the output directory, number of training epochs, and batch sizes.
+            - Configures the learning rate, weight decay, and optimizer type.
+            - Initializes the model loading configuration, including whether to load in 4-bit quantized mode.
+            - Checks GPU compatibility for bfloat16 precision to optimize training performance when using 4-bit quantized models.
+
+        Returns:
+            None. This function sets class attributes based on the input arguments for use in other methods or for model configuration.
+        """
+
+
         self.lora_r = lora_r  #lora rank                               
         self.lora_alpha = lora_alpha    #Alpha parameter for LoRA scaling
         self.lora_dropout = lora_dropout
@@ -52,6 +90,27 @@ class Finetune:
 
     def mergeModel(self, base_model_name, finetuned_model_dir):
 
+        """
+        Merge a base model with a fine-tuned model and load the corresponding tokenizer.
+
+        Input arguments:
+            base_model_name (str): 
+                The name or path of the base model to be loaded.
+            finetuned_model_dir (str): 
+                The directory containing the fine-tuned model.
+
+        What it does:
+            - Loads the base model using the specified `base_model_name`, configured for half-precision (`float16`).
+            - Loads the fine-tuned model parameters from the specified directory using `PeftModel`.
+            - Merges the base model and the fine-tuned model into a single model and unloads any unnecessary parts to save memory.
+            - Loads the tokenizer corresponding to the fine-tuned model from the specified directory.
+
+        Returns:
+            tuple: A tuple containing:
+                - model (LlamaForCausalLM): The merged model combining the base and fine-tuned parameters.
+                - tokenizer (CodeLlamaTokenizer): The tokenizer associated with the fine-tuned model.
+        """
+
         base_model = LlamaForCausalLM.from_pretrained(
                                                         base_model_name,
                                                         return_dict = True,
@@ -65,7 +124,30 @@ class Finetune:
 
 
     def make_supervised_data_module(self, data_path, tokenizer, mode = 'IT'):
-        """Make dataset and collator for supervised fine-tuning."""
+
+        """
+        Create a dataset and data collator for supervised fine-tuning.
+
+        Input arguments:
+            data_path (str): 
+                The path to the dataset file or directory containing the training data.
+            tokenizer (Tokenizer): 
+                The tokenizer to be used for tokenizing the input data.
+            mode (str, optional): 
+                The mode of operation for the dataset, default is 'IT' (Instruction Tuning).
+
+        What it does:
+            - Initializes a `SupervisedDataset` using the provided `data_path`, `tokenizer`, and `mode`.
+            - Creates a `DataCollatorForSupervisedDataset` using the provided `tokenizer`.
+            - Returns a dictionary containing the training dataset, evaluation dataset (set to None), and the data collator.
+
+        Returns:
+            dict: A dictionary with the following keys:
+                - 'train_dataset': The initialized training dataset.
+                - 'eval_dataset': The evaluation dataset (currently set to None).
+                - 'data_collator': The data collator for batching the dataset.
+        """
+
         train_dataset = SupervisedDataset(data_path, tokenizer = tokenizer, mode = mode)
         data_collator = DataCollatorForSupervisedDataset(tokenizer = tokenizer)
         return dict(train_dataset = train_dataset, eval_dataset = None, data_collator = data_collator)  
@@ -74,6 +156,35 @@ class Finetune:
 
     def train(self, model, tokenizer, mode = 'IT', max_seq_length = 500, output_dir ='Results/', data_path='leetcode_instructions_code_alpaca_format.json'):
 
+        """
+        Train the model using supervised fine-tuning.
+
+        Input arguments:
+            model (PreTrainedModel): 
+                The pre-trained model to be fine-tuned.
+            tokenizer (Tokenizer): 
+                The tokenizer used for processing the input data.
+            mode (str, optional): 
+                The mode of operation for the dataset (default is 'IT' for Instruction Tuning). Options are IT and IM (Instruction Modelling).
+            max_seq_length (int, optional): 
+                The maximum sequence length for the input data (default is 500).
+            output_dir (str, optional): 
+                The directory where the trained model will be saved (default is 'Results/').
+            data_path (str, optional): 
+                The path to the dataset file in JSON format (default is 'leetcode_instructions_code_alpaca_format.json').
+
+        What it does:
+            - Creates a data module by calling `make_supervised_data_module` with the provided `data_path` and `tokenizer`.
+            - Sets up the PEFT (Parameter Efficient Fine-Tuning) configuration using `LoraConfig`.
+            - Defines training arguments using `TrainingArguments`.
+            - Initializes an `SFTTrainer` with the model, PEFT configuration, tokenizer, training arguments, and the data module.
+            - Trains the model using the trainer.
+            - Saves the trained model to the specified output directory.
+
+        Returns:
+            None
+        """
+        
         data_module = self.make_supervised_data_module(data_path, tokenizer=tokenizer, mode = mode)
 
         #Set supervised fine-tuning parameters
@@ -113,17 +224,11 @@ class Finetune:
             packing = True,
             **data_module
         )
-
+        print('Training model with the configurations mentioned...')
         trainer.train()
 
         trainer.save_model(output_dir)
+        print('Model finetuned and saved to ', output_dir)
         #return trainer.model
-
-
-#sentences too long
-#too much content
-#evolution
-#data table
-
         
         
