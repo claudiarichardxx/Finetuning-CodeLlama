@@ -7,7 +7,10 @@ from eval.humaneval import HumanEval
 
 class Pipelines:
 
-    def finetune(self, model_name,  mode = 'IT', output_dir = 'FT_model/', run_eval = True, run_finetuning = False, load_quantized_model = True):
+    def finetune(self, model_name,  mode = 'IT', output_dir = 'FT_model/', run_eval = True, 
+                 run_finetuning = False, load_quantized_model = True, lora_r= 100, lora_alpha = 16, 
+                 lora_dropout = 0.1, num_train_epochs = 1, batch_size = 2, weight_decay = 0.01, 
+                 learning_rate = 2e-5, optim = "paged_adamw_32bit"):
 
         gg = getModel()
         model, tokenizer = gg.load(model_name = model_name, load_quantized_model = load_quantized_model)
@@ -16,7 +19,16 @@ class Pipelines:
         if(run_finetuning):
 
             ft = Finetune()
-            ft.setParameters(lora_r = 100, load_quantized_model = load_quantized_model)
+            ft.setParameters(lora_r = lora_r, 
+                             load_quantized_model = load_quantized_model, 
+                             lora_alpha = lora_alpha, 
+                             lora_dropout = lora_dropout,  
+                             output_dir = output_dir, 
+                             num_train_epochs = num_train_epochs, 
+                             batch_size = batch_size, 
+                             weight_decay = weight_decay, 
+                             learning_rate = learning_rate, 
+                             optim = optim)
             output_dir = output_dir
             ft.train(model, tokenizer, output_dir = output_dir, mode = mode, max_seq_length = 500, data_path = 'data/leetcode_instructions_code_alpaca_format.json')
             model, tokenizer = ft.merge(base_model_name = model_name, finetuned_model_dir = output_dir)

@@ -77,7 +77,8 @@ class SupervisedDataset(Dataset):
 @dataclass
 class DataCollatorForSupervisedDataset(object):
     """Collate examples for supervised fine-tuning."""
-
+    tokenizer: object
+    
     def __call__(self, instances):
             input_ids, labels = tuple([instance[key] for instance in instances] for key in ("input_ids", "labels"))
             input_ids = torch.nn.utils.rnn.pad_sequence(
