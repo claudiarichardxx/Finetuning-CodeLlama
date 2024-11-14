@@ -2,12 +2,12 @@ from finetuning.initializer import *
 from finetuning.finetune import *
 from finetuning.dataProcessing import *
 from finetuning.generate import *
-from eval.humaneval import HumanEval
+from eval.evaluation import Evaluation
 
 
 class Pipelines:
 
-    def finetune(self, model_name,  mode = 'IT', output_dir = 'FT_model/', run_eval = True, 
+    def finetune(self, model_name,  mode = 'IT', output_dir = 'FT_model/', run_eval = True, tasks = ['humaneval', 'mbpp'], 
                  run_finetuning = False, load_quantized_model = True, lora_r= 100, lora_alpha = 16, 
                  lora_dropout = 0.1, num_train_epochs = 1, batch_size = 2, weight_decay = 0.01, 
                  learning_rate = 2e-5, optim = "paged_adamw_32bit"):
@@ -67,12 +67,13 @@ class Pipelines:
         
         if(run_eval):
 
-            he = HumanEval()
+            eval = Evaluation()
 
             self.prompts = {'alpaca' : self.generate_alpaca_prompt, 'leetcode': self.generate_leetcode_promptV2}
-            self.get_outputs_for_first_n_tests(model, tokenizer, device = 'cuda', prompt_type = 'leetcode', num_samples_per_task = 1)
-            pass_at_k, accuracy = he.evaluate_functional_correctness_for_n_tasks("samples.jsonl")
-            return pass_at_k, accuracy
+            self.get_outputs_for_first_n_tests(model, tokenizer, tasks = tasks, device = 'cuda', prompt_type = 'leetcode', num_samples_per_task = 1)
+            for task in tasks:
+                pass_at_k = eval.evaluate_functional_correctness_for_n_tasks(task + "_results.jsonl", task = task)
+                print(f"\nThe pass@1 for task {task}: {pass_at_k}")
     
         return 0, 0
 
@@ -178,7 +179,7 @@ class Pipelines:
     
 
     #to run all the problems
-    def get_outputs(self, model, tokenizer, device, prompt_type = None, num_samples_per_task = 1):
+    def get_outputs(self, model, tokenizer, device, tasks = ['humaneval'], prompt_type = None, num_samples_per_task = 1):
 
         """
         Reads all the problems from the HumanEval dataset and generates outputs using the specified model and tokenizer.
@@ -201,28 +202,31 @@ class Pipelines:
             None
         """
         
-        he = HumanEval()
-        problems = he.read_problems()
-        samples = []
-        ge = Generate()
-        if(prompt_type == None):
+        eval = Evaluation()
 
-            for task_id in problems:
-                full, completion = ge.generate(task_id, problems[task_id]["prompt"], device, model, tokenizer) 
-                samples.append(dict(task_id=task_id, full_generation = full, completion = completion))
+        for task in tasks:
 
-        else:
+            problems = eval.read_problems(task = task)
+            samples = []
+            ge = Generate()
+            if(prompt_type == None):
 
-            for task_id in problems:
-                full, completion = ge.generate(task_id, self.prompts[prompt_type](input = problems[task_id]["prompt"]), device, model, tokenizer) 
+                for task_id in problems:
+                    full, completion = ge.generate(task_id, problems[task_id]["prompt"], device, model, tokenizer) 
+                    samples.append(dict(task_id=task_id, full_generation = full, completion = completion))
 
-                samples.append(dict(task_id=task_id, full_generation = full, completion = completion))
+            else:
 
-        he.write_jsonl("samples.jsonl", samples)
+                for task_id in problems:
+                    full, completion = ge.generate(task_id, self.prompts[prompt_type](input = problems[task_id]["prompt"]), device, model, tokenizer) 
+
+                    samples.append(dict(task_id=task_id, full_generation = full, completion = completion))
+
+            eval.write_jsonl(task + "_results.jsonl", samples)
 
 
     #to run the first n tests
-    def get_outputs_for_first_n_tests(self, model, tokenizer, device, prompt_type = None, num_of_tests = 1, num_samples_per_task = 1):
+    def get_outputs_for_first_n_tests(self, model, tokenizer, device, tasks = ['humaneval'], prompt_type = None, num_of_tests = 1, num_samples_per_task = 1):
 
         """
         Runs the first n tests on the provided model and tokenizer and generates outputs.
@@ -246,28 +250,30 @@ class Pipelines:
             None
         """
         
-        he = HumanEval()
-        problems = he.read_problems()
-        probs = {}
-        n = 0
-        for key, value in problems.items():
-            if(n < num_of_tests):
-                probs[key] = value
-            n = n + 1
+        eval = Evaluation()
+        for task in tasks:
 
-        samples = []
-        ge = Generate()
-        if(prompt_type == None):
+            problems = eval.read_problems(task = task)
+            probs = {}
+            n = 0
+            for key, value in problems.items():
+                if(n < num_of_tests):
+                    probs[key] = value
+                n = n + 1
 
-            for task_id in probs:
-                full, completion = ge.generate(task_id, problems[task_id]["prompt"], device, model, tokenizer) 
-                samples.append(dict(task_id=task_id, full_generation = full, completion = completion))
+            samples = []
+            ge = Generate()
+            if(prompt_type == None):
 
-        else:
+                for task_id in probs:
+                    full, completion = ge.generate(task_id, problems[task_id]["prompt"], device, model, tokenizer) 
+                    samples.append(dict(task_id=task_id, full_generation = full, completion = completion))
 
-            for task_id in probs:
-                full, completion = ge.generate(task_id, self.prompts[prompt_type](input = problems[task_id]["prompt"]), device, model, tokenizer) 
-                samples.append(dict(task_id=task_id, full_generation = full, completion = completion))
+            else:
 
-        he.write_jsonl("samples.jsonl", samples)
+                for task_id in probs:
+                    full, completion = ge.generate(task_id, self.prompts[prompt_type](input = problems[task_id]["prompt"]), device, model, tokenizer) 
+                    samples.append(dict(task_id=task_id, full_generation = full, completion = completion))
+
+            eval.write_jsonl(task + "_results.jsonl", samples)
 
