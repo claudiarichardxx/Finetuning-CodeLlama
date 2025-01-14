@@ -26,9 +26,11 @@ This can be summarised as follows:
 
 # Objectives
 
-## Instruction Tuning: The Instruction Tuning objective is to focus only on generating the output code. The instruction and input should not be included in the target; instead, they should be masked using the ‘ignore index’ token (set to -100 for CodeLlama). The source consists of the instruction and input, while the target is the output.
+## Instruction Tuning: 
+The Instruction Tuning objective is to focus only on generating the output code. The instruction and input should not be included in the target; instead, they should be masked using the ‘ignore index’ token (set to -100 for CodeLlama). The source consists of the instruction and input, while the target is the output.
 
-## Instruction Modelling: The Instruction Modelling objective, on the other hand, aims to generate both the instruction and the code, so no masking is required. Here, the source includes the instruction and input, and the target includes the instruction, input, and output together.
+## Instruction Modelling: 
+The Instruction Modelling objective, on the other hand, aims to generate both the instruction and the code, so no masking is required. Here, the source includes the instruction and input, and the target includes the instruction, input, and output together.
 
 # The configuration of our run was
 ```
